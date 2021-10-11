@@ -29,6 +29,13 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${versions.JacksonVersion}"
     implementation 'com.google.protobuf:protobuf-java:3.18.1'
     implementation 'commons-codec:commons-codec:1.15'
+
+    testImplementation "com.typesafe.akka:akka-stream-kafka-testkit_${versions.ScalaBinary}:2.1.1"
+    testImplementation "com.typesafe.akka:akka-stream-testkit_${versions.ScalaBinary}:${versions.AkkaVersion}"
+
+    implementation platform('org.testcontainers:testcontainers-bom:1.16.0') //import bom
+    testImplementation "org.testcontainers:testcontainers"
+    testImplementation "org.testcontainers:junit-jupiter"
 }
 
 protobuf {

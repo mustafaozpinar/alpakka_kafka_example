@@ -34,7 +34,6 @@ public class KafkaSourceConfig {
         this.actorSystem = actorSystem;
     }
 
-
     @Bean
     public ConsumerSettings<String, byte[]> getKafkaConsumerSettings() {
         return ConsumerSettings.create(actorSystem, new StringDeserializer(), new ByteArrayDeserializer())
@@ -46,11 +45,6 @@ public class KafkaSourceConfig {
 
     @Bean
     public Source<ConsumerRecord<String, byte[]>, Consumer.Control> getKafkaCommittableSource() {
-//        Consumer.plainSource(getKafkaConsumerSettings(), Subscriptions.topics(reviewTopic))
-//                .map(ConsumerRecord::value)
-//                .map(Review::parseFrom)
-//                .toMat(Sink.seq(), Consumer::createDrainingControl)
-//                .run(actorSystem);
         return Consumer.plainSource(getKafkaConsumerSettings(), Subscriptions.topics(reviewTopic));
     }
 
