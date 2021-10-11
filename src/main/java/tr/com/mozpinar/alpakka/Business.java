@@ -25,21 +25,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @EnableScheduling
 public class Business {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${kafka.reviewTopic}")
     private String reviewTopic;
 
-    private final Sink<String, CompletionStage<Done>> sink = Sink.foreach(log::info);
-    private final Flow<ConsumerRecord<String, String>, String, NotUsed> flow = Flow.fromFunction(record -> record.value().toUpperCase());
+    private final Sink<Review, CompletionStage<Done>> sink = Sink.foreach(record -> logger.info(String.format("Received message: %s", record.toString())));
+    private final Flow<ConsumerRecord<String, byte[]>, Review, NotUsed> flow = Flow.fromFunction(record -> Review.parseFrom(record.value()));
 
-    private final AtomicInteger counter = new AtomicInteger(0);
+    private final AtomicInteger counter = new AtomicInteger(200);
 
     private final ActorSystem actorSystem;
-    private final Source<ConsumerRecord<String, String>, Consumer.Control> source;
-    private final SendProducer<String, String> producer;
+    private final Source<ConsumerRecord<String, byte[]>, Consumer.Control> source;
+    private final SendProducer<String, byte[]> producer;
 
-    public Business(ActorSystem actorSystem, Source<ConsumerRecord<String, String>, Consumer.Control> source, SendProducer<String, String> producer) {
+    public Business(ActorSystem actorSystem, SendProducer<String, byte[]> producer,
+                    Source<ConsumerRecord<String, byte[]>, Consumer.Control> source) {
         this.actorSystem = actorSystem;
         this.source = source;
         this.producer = producer;
@@ -47,19 +48,27 @@ public class Business {
 
     @PostConstruct
     private void init() {
-        source.via(flow)
+        source
+                .via(flow)
                 .toMat(sink, Keep.right())
                 .run(actorSystem);
     }
 
     /**
-     * Push 10 messages to "event" topic every 3 seconds
+     * Push messages periodically to topic
      */
-    @Scheduled(fixedDelay = 3000L)
+    @Scheduled(fixedDelay = 2000L)
     private void publish() {
-        for (int i = 0; i < 10; i++) {
-            producer.send(new ProducerRecord<>(reviewTopic, "message #" + counter.addAndGet(1)));
-        }
+        int messageNumber = counter.addAndGet(1);
+        Review review = Review.newBuilder()
+                .setProductName("book-" + messageNumber)
+                .setUsername("mozpinar-" + messageNumber)
+                .setMessage("Exciting!-" + messageNumber)
+                .setRate(messageNumber % 4 + 1)
+                .build();
+
+        logger.info("Sending new review: " + review.toString());
+        producer.send(new ProducerRecord<>(reviewTopic, review.getProductName(), review.toByteArray()));
     }
 
 }

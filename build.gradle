@@ -15,9 +15,9 @@ repositories {
 }
 
 def versions = [
-        AkkaVersion: "2.6.15",
+        AkkaVersion   : "2.6.15",
         JacksonVersion: "2.11.4",
-        ScalaBinary: "2.13"
+        ScalaBinary   : "2.13"
 ]
 
 dependencies {
@@ -28,6 +28,7 @@ dependencies {
     implementation "com.typesafe.akka:akka-stream_${versions.ScalaBinary}:${versions.AkkaVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${versions.JacksonVersion}"
     implementation 'com.google.protobuf:protobuf-java:3.18.1'
+    implementation 'commons-codec:commons-codec:1.15'
 }
 
 protobuf {

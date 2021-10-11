@@ -9,6 +9,8 @@ import akka.kafka.javadsl.SendProducer;
 import akka.stream.javadsl.Source;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,27 +36,32 @@ public class KafkaSourceConfig {
 
 
     @Bean
-    public ConsumerSettings<String, String> getKafkaConsumerSettings() {
-        return ConsumerSettings.create(actorSystem, new StringDeserializer(), new StringDeserializer())
+    public ConsumerSettings<String, byte[]> getKafkaConsumerSettings() {
+        return ConsumerSettings.create(actorSystem, new StringDeserializer(), new ByteArrayDeserializer())
                 .withBootstrapServers(kafkaBootstrapServers)
                 .withGroupId("alpakka-event-ingestor")
-                .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+                .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest")
                 .withStopTimeout(Duration.ofSeconds(5));
     }
 
     @Bean
-    public Source<ConsumerRecord<String, String>, Consumer.Control> getKafkaCommittableSource() {
+    public Source<ConsumerRecord<String, byte[]>, Consumer.Control> getKafkaCommittableSource() {
+//        Consumer.plainSource(getKafkaConsumerSettings(), Subscriptions.topics(reviewTopic))
+//                .map(ConsumerRecord::value)
+//                .map(Review::parseFrom)
+//                .toMat(Sink.seq(), Consumer::createDrainingControl)
+//                .run(actorSystem);
         return Consumer.plainSource(getKafkaConsumerSettings(), Subscriptions.topics(reviewTopic));
     }
 
     @Bean
-    public ProducerSettings<String, String> getKafkaProducerSettings() {
-        return ProducerSettings.create(actorSystem, new StringSerializer(), new StringSerializer())
+    public ProducerSettings<String, byte[]> getKafkaProducerSettings() {
+        return ProducerSettings.create(actorSystem, new StringSerializer(), new ByteArraySerializer())
                 .withBootstrapServers(kafkaBootstrapServers);
     }
 
     @Bean
-    public SendProducer<String, String> getKafkaProducer() {
+    public SendProducer<String, byte[]> getKafkaProducer() {
         return new SendProducer<>(getKafkaProducerSettings(), actorSystem);
     }
 }
