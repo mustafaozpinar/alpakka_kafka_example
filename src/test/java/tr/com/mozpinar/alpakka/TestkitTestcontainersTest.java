@@ -8,9 +8,11 @@ import akka.kafka.testkit.javadsl.TestcontainersKafkaTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Duration;
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestkitTestcontainersTest extends TestcontainersKafkaTest {
 
