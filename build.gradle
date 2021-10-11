@@ -1,0 +1,42 @@
+plugins {
+    id 'org.springframework.boot' version '2.5.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id "com.google.protobuf" version "0.8.17"
+    id 'idea'
+}
+
+group = 'tr.com.mozpinar'
+version = '0.0.1'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+def versions = [
+        AkkaVersion: "2.6.15",
+        JacksonVersion: "2.11.4",
+        ScalaBinary: "2.13"
+]
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation "com.typesafe.akka:akka-stream-kafka_${versions.ScalaBinary}:2.1.1"
+    implementation "com.typesafe.akka:akka-stream_${versions.ScalaBinary}:${versions.AkkaVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${versions.JacksonVersion}"
+    implementation 'com.google.protobuf:protobuf-java:3.18.1'
+}
+
+protobuf {
+    protoc {
+        // Download from repositories
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
